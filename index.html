@@ -1,0 +1,839 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Kaedim — Throughput & Revision Drag Model (Mock UI)</title>
+    <style>
+      :root{
+        --bg:#ffffff;
+        --text:#0f172a;
+        --muted:#64748b;
+        --border:#e5e7eb;
+        --card:#ffffff;
+        --shadow: 0 10px 30px rgba(2, 6, 23, 0.06);
+        --radius:18px;
+
+        /* Kaedim-ish gradient accent */
+        --g1:#a855f7; /* purple */
+        --g2:#f97316; /* orange */
+        --g3:#ec4899; /* pink */
+        --accent: linear-gradient(90deg, var(--g1), var(--g3), var(--g2));
+      }
+
+      *{box-sizing:border-box}
+      body{
+        margin:0;
+        font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+        background: #fff;
+        color: var(--text);
+      }
+
+      .page{
+        min-height:100vh;
+        padding: 28px;
+        display:flex;
+        justify-content:center;
+      }
+
+      .frame{
+        width: min(1200px, 100%);
+        display:flex;
+        gap: 22px;
+        align-items:flex-start;
+      }
+
+      /* LEFT */
+      .left{
+        flex: 1.05;
+        display:flex;
+        flex-direction:column;
+        gap: 18px;
+      }
+
+      .section{
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 18px 18px 16px;
+      }
+
+      .section h2{
+        font-size: 16px;
+        margin: 0 0 10px;
+        letter-spacing: -0.01em;
+      }
+      .section p.note{
+        margin: 6px 0 0;
+        color: var(--muted);
+        font-size: 12.5px;
+        line-height: 1.35;
+      }
+
+      .row{
+        display:flex;
+        gap: 12px;
+        flex-wrap:wrap;
+      }
+
+      .field{
+        flex: 1;
+        min-width: 220px;
+      }
+
+      .label{
+        font-size: 12.5px;
+        color: var(--muted);
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        margin-bottom: 8px;
+      }
+
+      .valuePill{
+        font-size: 12px;
+        color: var(--text);
+        padding: 4px 8px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: #f8fafc;
+      }
+
+      .input{
+        width:100%;
+        height: 44px;
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        padding: 10px 12px;
+        font-size: 14px;
+        outline:none;
+      }
+      .input:focus{
+        border-color: rgba(168,85,247,.55);
+        box-shadow: 0 0 0 4px rgba(168,85,247,.12);
+      }
+
+      /* Slider */
+      .sliderWrap{
+        padding-top: 2px;
+      }
+      input[type="range"]{
+        width:100%;
+        -webkit-appearance:none;
+        appearance:none;
+        height: 6px;
+        border-radius:999px;
+        background: #e5e7eb;
+        outline:none;
+      }
+      input[type="range"]::-webkit-slider-thumb{
+        -webkit-appearance:none;
+        appearance:none;
+        width: 22px;
+        height: 22px;
+        border-radius: 999px;
+        background: #fff;
+        border: 2px solid rgba(168,85,247,.9);
+        box-shadow: 0 6px 18px rgba(15,23,42,.15);
+        cursor:pointer;
+      }
+      input[type="range"]::-moz-range-thumb{
+        width: 22px;
+        height: 22px;
+        border-radius: 999px;
+        background: #fff;
+        border: 2px solid rgba(168,85,247,.9);
+        box-shadow: 0 6px 18px rgba(15,23,42,.15);
+        cursor:pointer;
+      }
+
+      /* Select cards (visual parity with Kaedim UI) */
+      .cardGrid{
+        display:grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 10px;
+      }
+
+      .selectCard{
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        padding: 14px 14px;
+        min-height: 64px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        text-align:center;
+        cursor:pointer;
+        user-select:none;
+        background: #fff;
+        transition: transform .08s ease, box-shadow .15s ease, border-color .15s ease;
+      }
+      .selectCard:hover{
+        transform: translateY(-1px);
+        box-shadow: 0 10px 22px rgba(2,6,23,.06);
+      }
+      .selectCard.selected{
+        border: 2px solid transparent;
+        background:
+          linear-gradient(#fff,#fff) padding-box,
+          var(--accent) border-box;
+      }
+      .selectCard .title{
+        font-size: 13.5px;
+        color: var(--text);
+        line-height: 1.2;
+      }
+
+      .toggle{
+        display:flex;
+        align-items:center;
+        gap: 10px;
+        margin-top: 10px;
+      }
+      .toggle input{
+        width: 42px;
+        height: 24px;
+        appearance:none;
+        background:#e5e7eb;
+        border-radius: 999px;
+        position:relative;
+        outline:none;
+        cursor:pointer;
+        transition: background .15s ease;
+      }
+      .toggle input:checked{
+        background: rgba(168,85,247,.35);
+      }
+      .toggle input:before{
+        content:"";
+        position:absolute;
+        top:3px; left:3px;
+        width: 18px; height: 18px;
+        background:#fff;
+        border-radius:999px;
+        box-shadow: 0 6px 14px rgba(15,23,42,.15);
+        transition: transform .15s ease;
+      }
+      .toggle input:checked:before{
+        transform: translateX(18px);
+      }
+      .toggle label{
+        font-size: 12.5px;
+        color: var(--muted);
+      }
+
+      details{
+        margin-top: 12px;
+        border-top: 1px dashed #e5e7eb;
+        padding-top: 10px;
+      }
+      summary{
+        cursor:pointer;
+        color: var(--text);
+        font-size: 13px;
+        font-weight: 600;
+        list-style:none;
+      }
+      summary::-webkit-details-marker{ display:none; }
+      .small{
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 8px;
+      }
+
+      /* RIGHT */
+      .right{
+        flex: 0.95;
+        position:sticky;
+        top: 18px;
+      }
+
+      .results{
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 18px;
+      }
+
+      .resultsHeader{
+        text-align:center;
+        padding: 10px 0 8px;
+      }
+      .resultsHeader .kicker{
+        font-size: 13px;
+        color: var(--muted);
+        margin-bottom: 8px;
+      }
+      .resultsHeader .big{
+        font-size: 48px;
+        line-height: 1;
+        letter-spacing: -0.03em;
+        margin: 0;
+        background: var(--accent);
+        -webkit-background-clip:text;
+        background-clip:text;
+        color: transparent;
+        font-weight: 800;
+      }
+      .resultsHeader .sub{
+        margin-top: 6px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .metricGrid{
+        display:grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 14px;
+      }
+
+      .metricCard{
+        border-radius: 16px;
+        border: 2px solid transparent;
+        background:
+          linear-gradient(#fff,#fff) padding-box,
+          var(--accent) border-box;
+        padding: 14px 14px 12px;
+        min-height: 96px;
+        display:flex;
+        flex-direction:column;
+        justify-content:space-between;
+      }
+
+      .metricCard .name{
+        color: var(--muted);
+        font-size: 12.5px;
+        display:flex;
+        align-items:center;
+        justify-content:space-between;
+        gap: 8px;
+      }
+
+      .metricCard .val{
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        margin-top: 10px;
+        color: var(--text);
+      }
+
+      .metricCard .hint{
+        font-size: 12px;
+        color: var(--muted);
+        margin-top: 4px;
+      }
+
+      .cta{
+        margin-top: 16px;
+        width:100%;
+        height: 54px;
+        border:none;
+        border-radius: 16px;
+        background: var(--accent);
+        color:#fff;
+        font-weight: 700;
+        font-size: 16px;
+        cursor:pointer;
+        box-shadow: 0 10px 26px rgba(168,85,247,.22);
+      }
+      .cta:active{
+        transform: translateY(1px);
+      }
+
+      .footerNote{
+        margin-top: 12px;
+        font-size: 12px;
+        color: var(--muted);
+        line-height: 1.35;
+      }
+
+      @media (max-width: 980px){
+        .frame{flex-direction:column}
+        .right{position:relative; top:auto}
+        .metricGrid{grid-template-columns:1fr}
+        .cardGrid{grid-template-columns:1fr}
+      }
+    </style>
+  </head>
+  <body>
+    <div class="page">
+      <div class="frame">
+        <!-- LEFT: Inputs -->
+        <div class="left">
+          <div class="section">
+            <h2>How many assets do you need per month?</h2>
+            <div class="label">
+              <span>Assets per month</span>
+              <span class="valuePill" id="A_pill">300 assets</span>
+            </div>
+            <div class="sliderWrap">
+              <input id="assetsPerMonth" type="range" min="10" max="3000" step="10" value="300"/>
+            </div>
+
+          </div>
+
+          <div class="section">
+            <h2>What kind of assets are these?</h2>
+            <div class="label">
+              <span>Select one</span>
+              <span class="valuePill" id="assetTypePill">Game props & environment</span>
+            </div>
+
+            <div class="cardGrid" id="assetTypeGrid">
+              <div class="selectCard selected" data-type="game">
+                <div class="title">Game props &amp;<br/>Environment</div>
+              </div>
+              <div class="selectCard" data-type="characters">
+                <div class="title">Characters &amp;<br/>Avatars</div>
+              </div>
+              <div class="selectCard" data-type="consumer">
+                <div class="title">Consumer products &amp;<br/>Packaging</div>
+              </div>
+              <div class="selectCard" data-type="vfx">
+                <div class="title">Animation / VFX<br/>Elements</div>
+              </div>
+              <div class="selectCard" data-type="archviz">
+                <div class="title">Architecture &amp;<br/>Interiors</div>
+              </div>
+              <div class="selectCard" data-type="manufacturing">
+                <div class="title">3D Printing &amp;<br/>Manufacturing</div>
+              </div>
+            </div>
+
+            <div class="toggle">
+              <input id="showAssumptions" type="checkbox" />
+              <label for="showAssumptions">Show Kaedim impact assumptions</label>
+            </div>
+
+            <details id="assumptionsPanel">
+              <summary>Kaedim impact assumptions</summary>
+              <div class="row" style="margin-top:12px">
+                <div class="field">
+                  <div class="label">
+                    <span>Creation hours reduction</span>
+                    <span class="valuePill" id="K_create_pill">73%</span>
+                  </div>
+                  <input id="K_create" type="range" min="0" max="85" step="1" value="73" />
+                  <div class="small">How much Kaedim reduces base creation effort. Default: 73% — Lowe's case study: 32h → 8.7h per asset.</div>
+                </div>
+
+                <div class="field">
+                  <div class="label">
+                    <span>Revision rounds reduction</span>
+                    <span class="valuePill" id="K_rev_pill">35%</span>
+                  </div>
+                  <input id="K_rev" type="range" min="0" max="70" step="1" value="35" />
+                  <div class="small">Model revision cycle compression (fewer loops).</div>
+                </div>
+
+                <div class="field">
+                  <div class="label">
+                    <span>QA hours reduction</span>
+                    <span class="valuePill" id="K_qa_pill">40%</span>
+                  </div>
+                  <input id="K_qa" type="range" min="0" max="70" step="1" value="40" />
+                  <div class="small">Model reduced tech-check/rework time.</div>
+                </div>
+              </div>
+
+              <div class="small" style="margin-top:10px">
+                Tip: keep these conservative. This tool is meant to support ops planning and qualification, not guarantee outcomes.
+              </div>
+            </details>
+          </div>
+
+          <div class="section">
+            <h2>What does your pipeline look like today?</h2>
+            <div class="row">
+              <div class="field">
+                <div class="label">
+                  <span>Design / creation hours per asset</span>
+                  <span class="valuePill" id="H_create_pill">8 hours</span>
+                </div>
+                <div class="sliderWrap">
+                  <input id="H_create" type="range" min="1" max="80" step="1" value="8" />
+                </div>
+              </div>
+
+              <div class="field">
+                <div class="label">
+                  <span>Revision rounds (avg per asset)</span>
+                  <span class="valuePill" id="R_pill">1.6</span>
+                </div>
+                <div class="sliderWrap">
+                  <input id="R" type="range" min="0" max="6" step="0.1" value="1.6" />
+                </div>
+              </div>
+
+              <div class="field">
+                <div class="label">
+                  <span>Artist revision hours per round</span>
+                  <span class="valuePill" id="H_rev_pill">2 hours</span>
+                </div>
+                <div class="sliderWrap">
+                  <input id="H_rev" type="range" min="1" max="24" step="1" value="2" />
+                </div>
+              </div>
+
+              <div class="field">
+                <div class="label">
+                  <span>QA time per asset</span>
+                  <span class="valuePill" id="H_qa_pill">1 hour</span>
+                </div>
+                <div class="sliderWrap">
+                  <input id="H_qa" type="range" min="0" max="8" step="1" value="1" />
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- RIGHT: Results -->
+        <div class="right">
+          <div class="results">
+            <div class="resultsHeader">
+              <div class="kicker">Your estimated additional capacity</div>
+              <h1 class="big" id="additionalAssets">+0</h1>
+              <div class="sub">additional assets per month (same team)</div>
+            </div>
+
+            <div class="metricGrid">
+              <div class="metricCard">
+                <div class="name">
+                  <span>Creation hours reduced</span>
+                  <span id="creationPct" class="valuePill">0%</span>
+                </div>
+                <div class="val" id="creationSaved">0h</div>
+                <div class="hint">Saved on base creation effort</div>
+              </div>
+
+              <div class="metricCard">
+                <div class="name">
+                  <span>QA hours reduced</span>
+                  <span id="qaPct" class="valuePill">0%</span>
+                </div>
+                <div class="val" id="qaSaved">0h</div>
+                <div class="hint">Saved on tech-check + fixes</div>
+              </div>
+
+              <div class="metricCard">
+                <div class="name">
+                  <span>Revision rounds reduced</span>
+                  <span id="revPct" class="valuePill">0%</span>
+                </div>
+                <div class="val" id="revRoundsReduced">0.0</div>
+                <div class="hint">Per asset (average)</div>
+              </div>
+
+              <div class="metricCard">
+                <div class="name">
+                  <span>Handoffs reduced</span>
+                  <span class="valuePill">modeled</span>
+                </div>
+                <div class="val" id="handoffsReduced">0</div>
+                <div class="hint">Monthly feedback loops avoided</div>
+              </div>
+            </div>
+
+            <button class="cta" type="button">Book a Demo</button>
+
+            <div class="footerNote" id="footerNote">
+              Assumptions are editable. Results are estimates for ops planning and qualification.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // -----------------------------
+      // Model (parameters + functions)
+      // -----------------------------
+      // Inputs:
+      // A: assets_per_month
+      // H_create: base creation hours per asset
+      // R: revision rounds per asset (avg)
+      // H_rev: revision hours per round
+      // H_qa: QA hours per asset
+      //
+      // Impact assumptions (Kaedim):
+      // K_create: % reduction in creation hours (0..1)
+      // K_rev: % reduction in revision rounds (0..1)
+      // K_qa: % reduction in QA hours (0..1)
+      //
+      // Outputs:
+      // - Creation_Hours_Saved
+      // - QA_Hours_Saved
+      // - Revision_Rounds_Saved (per asset)
+      // - Handoffs_Reduced (monthly)
+      // - Additional_Assets_Per_Month (using saved hours / baseline hours per asset)
+
+      function clamp(n, min, max){ return Math.max(min, Math.min(max, n)); }
+
+      function computeModel({
+        A, H_create, R, H_rev, H_qa,
+        K_create, K_rev, K_qa
+      }) {
+        // Baseline totals
+        const baselineCreation = A * H_create;
+        const baselineRevision = A * R * H_rev;
+        const baselineQA       = A * H_qa;
+
+        const baselineTotalHours = baselineCreation + baselineRevision + baselineQA;
+
+        // Kaedim-assisted
+        const kaedimCreation = A * H_create * (1 - K_create);
+        const kaedimR        = R * (1 - K_rev);
+        const kaedimRevision = A * kaedimR * H_rev;
+        const kaedimQA       = A * H_qa * (1 - K_qa);
+
+        const kaedimTotalHours = kaedimCreation + kaedimRevision + kaedimQA;
+
+        // Saved
+        const creationSaved = baselineCreation - kaedimCreation;
+        const qaSaved       = baselineQA - kaedimQA;
+
+        const revRoundsSavedPerAsset = R - kaedimR;
+        const handoffsReducedMonthly = A * revRoundsSavedPerAsset;
+
+        const totalHoursSaved = baselineTotalHours - kaedimTotalHours;
+
+        // Baseline hours needed per asset (for capacity conversion)
+        const baselineHoursPerAsset = H_create + (R * H_rev) + H_qa;
+
+        const additionalAssets = baselineHoursPerAsset > 0
+          ? (totalHoursSaved / baselineHoursPerAsset)
+          : 0;
+
+        return {
+          baselineTotalHours,
+          kaedimTotalHours,
+          totalHoursSaved,
+          baselineHoursPerAsset,
+
+          creationSaved,
+          qaSaved,
+          revRoundsSavedPerAsset,
+          handoffsReducedMonthly,
+          additionalAssets
+        };
+      }
+
+      // -----------------------------
+      // UI wiring
+      // -----------------------------
+      const els = {
+        assetsPerMonth: document.getElementById("assetsPerMonth"),
+        A_pill: document.getElementById("A_pill"),
+
+        assetTypeGrid: document.getElementById("assetTypeGrid"),
+        assetTypePill: document.getElementById("assetTypePill"),
+
+        H_create: document.getElementById("H_create"),
+        R: document.getElementById("R"),
+        H_rev: document.getElementById("H_rev"),
+        H_qa: document.getElementById("H_qa"),
+
+        H_create_pill: document.getElementById("H_create_pill"),
+        R_pill: document.getElementById("R_pill"),
+        H_rev_pill: document.getElementById("H_rev_pill"),
+        H_qa_pill: document.getElementById("H_qa_pill"),
+
+        K_create: document.getElementById("K_create"),
+        K_rev: document.getElementById("K_rev"),
+        K_qa: document.getElementById("K_qa"),
+
+        K_create_pill: document.getElementById("K_create_pill"),
+        K_rev_pill: document.getElementById("K_rev_pill"),
+        K_qa_pill: document.getElementById("K_qa_pill"),
+
+        showAssumptions: document.getElementById("showAssumptions"),
+        assumptionsPanel: document.getElementById("assumptionsPanel"),
+
+        additionalAssets: document.getElementById("additionalAssets"),
+        creationSaved: document.getElementById("creationSaved"),
+        qaSaved: document.getElementById("qaSaved"),
+        revRoundsReduced: document.getElementById("revRoundsReduced"),
+        handoffsReduced: document.getElementById("handoffsReduced"),
+
+        creationPct: document.getElementById("creationPct"),
+        qaPct: document.getElementById("qaPct"),
+        revPct: document.getElementById("revPct"),
+
+        footerNote: document.getElementById("footerNote"),
+      };
+
+      // Asset type presets: tweak ONLY default assumptions, not user data.
+      // Keeps UI “like Kaedim’s” with selectable tiles.
+      const PRESETS = {
+        game: {
+          label: "Game props & environment",
+          // Baseline pipeline defaults
+          H_create: 8, R: 1.6, H_rev: 2.5, H_qa: 1.0,
+          // Kaedim impact defaults
+          K_create: 55, K_rev: 30, K_qa: 30,
+        },
+        characters: {
+          label: "Characters & avatars",
+          H_create: 24, R: 2.2, H_rev: 6.0, H_qa: 2.0,
+          K_create: 45, K_rev: 25, K_qa: 25,
+        },
+        consumer: {
+          label: "Consumer products & packaging",
+          H_create: 6, R: 1.4, H_rev: 1.5, H_qa: 0.75,
+          K_create: 55, K_rev: 30, K_qa: 30,
+        },
+        vfx: {
+          label: "Animation / VFX elements",
+          H_create: 16, R: 2.0, H_rev: 4.0, H_qa: 1.5,
+          K_create: 40, K_rev: 25, K_qa: 25,
+        },
+        archviz: {
+          label: "Architecture & interiors",
+          H_create: 18, R: 1.8, H_rev: 3.0, H_qa: 1.5,
+          K_create: 40, K_rev: 25, K_qa: 25,
+        },
+        manufacturing: {
+          label: "3D printing & manufacturing",
+          H_create: 10, R: 1.5, H_rev: 2.0, H_qa: 1.25,
+          K_create: 45, K_rev: 25, K_qa: 30,
+        }
+      };
+
+      let selectedAssetType = "game";
+
+      function fmtHours(n){
+        const v = Math.max(0, n);
+        if (v >= 1000) return `${Math.round(v).toLocaleString()} hours`;
+        if (v >= 100)  return `${Math.round(v)} hours`;
+        return `${(Math.round(v*10)/10).toFixed(1)} hours`;
+      }
+
+      function fmtAssets(n){
+        const v = Math.max(0, n);
+        if (v >= 1000) return `+${Math.round(v).toLocaleString()}`;
+        return `+${Math.round(v)}`;
+      }
+
+      function fmtNum(n, decimals=1){
+        const v = Math.max(0, n);
+        return (Math.round(v * Math.pow(10,decimals)) / Math.pow(10,decimals)).toFixed(decimals);
+      }
+
+      function readState(){
+        const A = Number(els.assetsPerMonth.value);
+
+        const H_create = clamp(Number(els.H_create.value || 0), 0, 1000);
+        const R        = clamp(Number(els.R.value || 0), 0, 20);
+        const H_rev    = clamp(Number(els.H_rev.value || 0), 0, 1000);
+        const H_qa     = clamp(Number(els.H_qa.value || 0), 0, 1000);
+
+        const K_create = clamp(Number(els.K_create.value) / 100, 0, 0.95);
+        const K_rev    = clamp(Number(els.K_rev.value) / 100, 0, 0.95);
+        const K_qa     = clamp(Number(els.K_qa.value) / 100, 0, 0.95);
+
+        return { A, H_create, R, H_rev, H_qa, K_create, K_rev, K_qa };
+      }
+
+      function render(){
+        const state = readState();
+        const out = computeModel(state);
+
+        // Pills
+        els.A_pill.textContent = `${state.A} assets`;
+        els.H_create_pill.textContent = `${fmtNum(state.H_create,0)} hours`;
+        els.R_pill.textContent = `${fmtNum(state.R,1)}`;
+        els.H_rev_pill.textContent = `${fmtNum(state.H_rev,0)} hours`;
+        els.H_qa_pill.textContent = `${fmtNum(state.H_qa,0)} hours`;
+
+        els.K_create_pill.textContent = `${Math.round(state.K_create*100)}%`;
+        els.K_rev_pill.textContent    = `${Math.round(state.K_rev*100)}%`;
+        els.K_qa_pill.textContent     = `${Math.round(state.K_qa*100)}%`;
+
+        // Results
+        els.additionalAssets.textContent = fmtAssets(out.additionalAssets);
+
+        els.creationSaved.textContent = fmtHours(out.creationSaved);
+        els.qaSaved.textContent       = fmtHours(out.qaSaved);
+
+        els.revRoundsReduced.textContent = fmtNum(out.revRoundsSavedPerAsset, 1);
+        els.handoffsReduced.textContent  = Math.round(out.handoffsReducedMonthly).toLocaleString();
+
+        els.creationPct.textContent = `${Math.round(state.K_create*100)}%`;
+        els.qaPct.textContent       = `${Math.round(state.K_qa*100)}%`;
+        els.revPct.textContent      = `${Math.round(state.K_rev*100)}%`;
+
+        // Footnote (context)
+        const pctCapacity = state.A > 0 ? (out.additionalAssets / state.A) : 0;
+        let band = "Low";
+        if (pctCapacity >= 0.30) band = "High";
+        else if (pctCapacity >= 0.10) band = "Medium";
+
+        els.footerNote.textContent =
+          `Estimated capacity lift: ${band} (${Math.round(pctCapacity*100)}% of current monthly volume). ` +
+          `Edit assumptions to match your pipeline.`;
+      }
+
+      // Asset type selection events
+      els.assetTypeGrid.addEventListener("click", (e) => {
+        const card = e.target.closest(".selectCard");
+        if (!card) return;
+
+        const type = card.getAttribute("data-type");
+        if (!PRESETS[type]) return;
+
+        selectedAssetType = type;
+
+        // Update selected class
+        [...els.assetTypeGrid.querySelectorAll(".selectCard")].forEach(c => c.classList.remove("selected"));
+        card.classList.add("selected");
+
+        // Update label pill
+        els.assetTypePill.textContent = PRESETS[type].label;
+
+        // Apply baseline pipeline defaults (THIS is the new part)
+        els.H_create.value = Math.round(PRESETS[type].H_create || 0);
+        els.R.value = PRESETS[type].R;
+        els.H_rev.value = Math.round(PRESETS[type].H_rev || 0);
+        els.H_qa.value = Math.round(PRESETS[type].H_qa || 0);
+
+        // Apply Kaedim impact defaults (even if panel is hidden)
+        els.K_create.value = PRESETS[type].K_create;
+        els.K_rev.value = PRESETS[type].K_rev;
+        els.K_qa.value = PRESETS[type].K_qa;
+
+        render();
+      });
+
+      // Show/hide assumptions
+      els.showAssumptions.addEventListener("change", () => {
+        if (els.showAssumptions.checked) {
+          els.assumptionsPanel.setAttribute("open", "");
+        } else {
+          els.assumptionsPanel.removeAttribute("open");
+        }
+      });
+
+      // Input events
+      const inputs = [
+        els.assetsPerMonth, els.H_create, els.R, els.H_rev, els.H_qa,
+        els.K_create, els.K_rev, els.K_qa
+      ];
+      inputs.forEach(el => {
+        el.addEventListener("input", render);
+        el.addEventListener("change", render);
+      });
+
+      // Initial pill label
+      els.assetTypePill.textContent = PRESETS[selectedAssetType].label;
+
+      // Initial render
+      render();
+    </script>
+  </body>
+</html>
