@@ -371,7 +371,7 @@
               <span class="valuePill" id="A_pill">300 assets</span>
             </div>
             <div class="sliderWrap">
-              <input id="assetsPerMonth" type="range" min="10" max="3000" step="10" value="300"/>
+              <input id="assetsPerMonth" type="range" min="10" max="2000" step="10" value="300"/>
             </div>
 
           </div>
@@ -405,20 +405,19 @@
             </div>
 
             <div class="toggle">
-              <input id="showAssumptions" type="checkbox" />
-              <label for="showAssumptions">Show Kaedim impact assumptions</label>
+              <input id="showAssumptions" type="checkbox" checked />
+              <label for="showAssumptions">Show Kaedim impact assumptions (recommended)</label>
             </div>
 
-            <details id="assumptionsPanel">
-              <summary>Kaedim impact assumptions</summary>
+            <div id="assumptionsPanel" style="display:block">
               <div class="row" style="margin-top:12px">
                 <div class="field">
                   <div class="label">
                     <span>Creation hours reduction</span>
-                    <span class="valuePill" id="K_create_pill">73%</span>
+                    <span class="valuePill" id="K_create_pill">60%</span>
                   </div>
-                  <input id="K_create" type="range" min="0" max="85" step="1" value="73" />
-                  <div class="small">How much Kaedim reduces base creation effort. Default: 73% — Lowe's case study: 32h → 8.7h per asset.</div>
+                  <input id="K_create" type="range" min="0" max="85" step="1" value="60" />
+                  <div class="small">How much Kaedim reduces base creation effort.</div>
                 </div>
 
                 <div class="field">
@@ -443,7 +442,7 @@
               <div class="small" style="margin-top:10px">
                 Tip: keep these conservative. This tool is meant to support ops planning and qualification, not guarantee outcomes.
               </div>
-            </details>
+            </div>
           </div>
 
           <div class="section">
@@ -452,11 +451,9 @@
               <div class="field">
                 <div class="label">
                   <span>Design / creation hours per asset</span>
-                  <span class="valuePill" id="H_create_pill">8 hours</span>
+                  <span class="valuePill" id="H_create_pill">8.0h</span>
                 </div>
-                <div class="sliderWrap">
-                  <input id="H_create" type="range" min="1" max="80" step="1" value="8" />
-                </div>
+                <input id="H_create" class="input" inputmode="decimal" type="number" min="0" step="0.25" value="8" />
               </div>
 
               <div class="field">
@@ -464,32 +461,30 @@
                   <span>Revision rounds (avg per asset)</span>
                   <span class="valuePill" id="R_pill">1.6</span>
                 </div>
-                <div class="sliderWrap">
-                  <input id="R" type="range" min="0" max="6" step="0.1" value="1.6" />
-                </div>
+                <input id="R" class="input" inputmode="decimal" type="number" min="0" step="0.1" value="1.6" />
               </div>
 
               <div class="field">
                 <div class="label">
                   <span>Artist revision hours per round</span>
-                  <span class="valuePill" id="H_rev_pill">2 hours</span>
+                  <span class="valuePill" id="H_rev_pill">2.5h</span>
                 </div>
-                <div class="sliderWrap">
-                  <input id="H_rev" type="range" min="1" max="24" step="1" value="2" />
-                </div>
+                <input id="H_rev" class="input" inputmode="decimal" type="number" min="0" step="0.25" value="2.5" />
               </div>
 
               <div class="field">
                 <div class="label">
                   <span>QA time per asset</span>
-                  <span class="valuePill" id="H_qa_pill">1 hour</span>
+                  <span class="valuePill" id="H_qa_pill">1.0h</span>
                 </div>
-                <div class="sliderWrap">
-                  <input id="H_qa" type="range" min="0" max="8" step="1" value="1" />
-                </div>
+                <input id="H_qa" class="input" inputmode="decimal" type="number" min="0" step="0.25" value="1" />
               </div>
             </div>
 
+            <p class="note">
+              This model treats “handoffs” as revision-loop cycles (each round implies a feedback → implement → re-review handoff).
+              It reports reductions in creation, QA, revision rounds, handoffs, and additional monthly capacity.
+            </p>
           </div>
         </div>
 
@@ -673,35 +668,27 @@
       const PRESETS = {
         game: {
           label: "Game props & environment",
-          // Baseline pipeline defaults
-          H_create: 8, R: 1.6, H_rev: 2.5, H_qa: 1.0,
-          // Kaedim impact defaults
-          K_create: 55, K_rev: 30, K_qa: 30,
+          K_create: 60, K_rev: 35, K_qa: 40,
         },
         characters: {
           label: "Characters & avatars",
-          H_create: 24, R: 2.2, H_rev: 6.0, H_qa: 2.0,
           K_create: 45, K_rev: 25, K_qa: 25,
         },
         consumer: {
           label: "Consumer products & packaging",
-          H_create: 6, R: 1.4, H_rev: 1.5, H_qa: 0.75,
-          K_create: 55, K_rev: 30, K_qa: 30,
+          K_create: 60, K_rev: 35, K_qa: 45,
         },
         vfx: {
           label: "Animation / VFX elements",
-          H_create: 16, R: 2.0, H_rev: 4.0, H_qa: 1.5,
-          K_create: 40, K_rev: 25, K_qa: 25,
+          K_create: 35, K_rev: 20, K_qa: 20,
         },
         archviz: {
           label: "Architecture & interiors",
-          H_create: 18, R: 1.8, H_rev: 3.0, H_qa: 1.5,
-          K_create: 40, K_rev: 25, K_qa: 25,
+          K_create: 40, K_rev: 25, K_qa: 30,
         },
         manufacturing: {
           label: "3D printing & manufacturing",
-          H_create: 10, R: 1.5, H_rev: 2.0, H_qa: 1.25,
-          K_create: 45, K_rev: 25, K_qa: 30,
+          K_create: 45, K_rev: 25, K_qa: 35,
         }
       };
 
@@ -709,9 +696,9 @@
 
       function fmtHours(n){
         const v = Math.max(0, n);
-        if (v >= 1000) return `${Math.round(v).toLocaleString()} hours`;
-        if (v >= 100)  return `${Math.round(v)} hours`;
-        return `${(Math.round(v*10)/10).toFixed(1)} hours`;
+        if (v >= 1000) return `${Math.round(v).toLocaleString()}h`;
+        if (v >= 100)  return `${Math.round(v)}h`;
+        return `${(Math.round(v*10)/10).toFixed(1)}h`;
       }
 
       function fmtAssets(n){
@@ -746,10 +733,10 @@
 
         // Pills
         els.A_pill.textContent = `${state.A} assets`;
-        els.H_create_pill.textContent = `${fmtNum(state.H_create,0)} hours`;
+        els.H_create_pill.textContent = `${fmtNum(state.H_create,1)}h`;
         els.R_pill.textContent = `${fmtNum(state.R,1)}`;
-        els.H_rev_pill.textContent = `${fmtNum(state.H_rev,0)} hours`;
-        els.H_qa_pill.textContent = `${fmtNum(state.H_qa,0)} hours`;
+        els.H_rev_pill.textContent = `${fmtNum(state.H_rev,1)}h`;
+        els.H_qa_pill.textContent = `${fmtNum(state.H_qa,1)}h`;
 
         els.K_create_pill.textContent = `${Math.round(state.K_create*100)}%`;
         els.K_rev_pill.textContent    = `${Math.round(state.K_rev*100)}%`;
@@ -793,16 +780,10 @@
         [...els.assetTypeGrid.querySelectorAll(".selectCard")].forEach(c => c.classList.remove("selected"));
         card.classList.add("selected");
 
-        // Update label pill
+        // Update label
         els.assetTypePill.textContent = PRESETS[type].label;
 
-        // Apply baseline pipeline defaults (THIS is the new part)
-        els.H_create.value = Math.round(PRESETS[type].H_create || 0);
-        els.R.value = PRESETS[type].R;
-        els.H_rev.value = Math.round(PRESETS[type].H_rev || 0);
-        els.H_qa.value = Math.round(PRESETS[type].H_qa || 0);
-
-        // Apply Kaedim impact defaults (even if panel is hidden)
+        // Apply preset ONLY to assumption sliders (keeps user pipeline inputs intact)
         els.K_create.value = PRESETS[type].K_create;
         els.K_rev.value = PRESETS[type].K_rev;
         els.K_qa.value = PRESETS[type].K_qa;
@@ -812,11 +793,7 @@
 
       // Show/hide assumptions
       els.showAssumptions.addEventListener("change", () => {
-        if (els.showAssumptions.checked) {
-          els.assumptionsPanel.setAttribute("open", "");
-        } else {
-          els.assumptionsPanel.removeAttribute("open");
-        }
+        els.assumptionsPanel.style.display = els.showAssumptions.checked ? "block" : "none";
       });
 
       // Input events
